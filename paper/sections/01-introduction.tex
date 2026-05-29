@@ -1,6 +1,45 @@
 \section{Introduction}
-This is a working-draft skeleton, built automatically by CI. The transformer
-architecture~\citep{vaswani2017attention} established attention as a core sequence-modeling
-primitive at the cost of quadratic time and memory in sequence length. This project studies
-the \emph{recall--memory tradeoff} exhibited by subquadratic alternatives. Full content is
-populated in later milestones.
+
+The transformer~\citep{vaswani2017attention} made attention the dominant sequence-modeling
+primitive, but its cost is quadratic in sequence length~$n$: $O(n^2 d)$ time and an
+autoregressive key--value (KV) cache that grows as $O(n d)$. A large body of subquadratic
+architectures---linear attention~\citep{katharopoulos2020transformers}, structured state-space
+models~\citep{gu2022s4,gu2023mamba}, and RWKV~\citep{peng2023rwkv}---replace the growing cache
+with a \emph{fixed-size recurrent state}, buying $O(n)$ or near-linear time and constant
+per-step inference cost.
+
+That substitution has a documented price: the \emph{recall--memory} (equivalently
+recall--throughput) tradeoff~\citep{arora2024zoology,arora2024based}. On
+\emph{multi-query associative recall} (MQAR), where a model must answer many independent
+key$\rightarrow$value lookups from its context, a fixed-size state must eventually lose
+information once the number of distinct stored pairs exceeds what it can hold. This is not a
+training artifact but an information-theoretic constraint: BASED~\citep{arora2024based} proves
+(Thm.~3.1, via a communication-complexity argument) that any causal recurrent model solving
+MQAR needs $\Omega(n)$ bits of state in the worst case; \citet{jelassi2024copying} prove a
+sibling bound for copying; and \citet{wen2025rnns} show $o(n)$-bit recurrent memory is
+insufficient for in-context retrieval even with chain-of-thought.
+
+\paragraph{Honest scope.}
+We tag every non-trivial claim \textbf{[PROVEN]}, \textbf{[EMPIRICAL]}, or
+\textbf{[CONJECTURE]}, and we do not reclaim the results above: the worst-case $\Omega(n)$
+recall--state bound is \emph{closed prior art}. Our starting observation is that those bounds
+are worst-case over (near-)uniform inputs, where the context genuinely carries $\Theta(n)$ bits.
+Real associative streams are not uniform---keys repeat, value distributions are skewed, and the
+number of \emph{surprising} bindings actually realized, an entropy quantity we write $H$, can be
+$H \ll n$. The recent reassessment of \citet{okpekpe2025revisiting} studies only uniform
+synthetic inputs and proposes no mechanism, leaving the structured-input regime open.
+
+\paragraph{Contribution (this working draft).}
+We make two attempts, both clearly hedged.
+\textbf{(H1, theory, \textbf{[CONJECTURE]}):} an \emph{entropy-parameterized} refinement of the
+recall--state bound, of the form $\Omega\!\big((1-H_b(\varepsilon))\,H\big)$ bits, which recovers
+BASED's $\Omega(n)$ exactly when $H=\Theta(n)$ and is strictly smaller when $H\ll n$; we flag
+upfront that this may follow as a near-corollary of existing augmented-INDEX / information-cost
+machinery, in which case we will demote it and say so.
+\textbf{(H2, mechanism, \textbf{[CONJECTURE]}$\rightarrow$target \textbf{[EMPIRICAL]}):} a
+subquadratic backbone augmented with a small \emph{surprise/entropy-gated} external associative
+memory whose state grows toward $\Theta(H)$ rather than $\Theta(n)$, intended to match
+attention-level recall on structured MQAR at sub-$O(n^2)$ cost while degrading gracefully to the
+worst case when $H=\Theta(n)$. The mechanism, and the empirical recall--memory Pareto study that
+tests it against matched-budget baselines, is the primary deliverable; the theory is supporting.
+A rigorous \emph{negative} result on the Pareto frontier is itself reported as a contribution.

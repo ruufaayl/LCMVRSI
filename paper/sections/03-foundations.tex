@@ -1,0 +1,56 @@
+\section{Mathematical Foundations}
+
+This section collects only the machinery the beachhead uses. Established results are tagged
+\textbf{[PROVEN]}; classical textbook results are attributed in prose.
+
+\subsection{Linear algebra of associative recall}
+A linear (outer-product) associative memory stores $D$ pairs $(k_i, v_i)$ with keys
+$k_i \in \mathbb{R}^{d}$ and values $v_i \in \mathbb{R}^{m}$ in a single matrix state
+\begin{equation}
+  S = \sum_{i=1}^{D} v_i k_i^\top \in \mathbb{R}^{m \times d}.
+\end{equation}
+Reading with query $q$ gives $\hat{y} = S q = \sum_i v_i (k_i^\top q)$. If the queried key $k_j$
+is orthonormal to the rest then $\hat{y} = v_j$ exactly; otherwise
+\begin{equation}
+  \hat{y} = v_j (k_j^\top q) + \underbrace{\textstyle\sum_{i \neq j} v_i (k_i^\top q)}_{\text{crosstalk / interference}} .
+\end{equation}
+Since $\mathrm{rank}(S) \le d$, at most $d$ mutually orthogonal keys fit, so a rank-$d$ state
+stores $\le d$ interference-free associations \textbf{[PROVEN]} (rank argument; classical linear
+associative memory, Anderson 1972, Kohonen 1972). This is the linear-algebra shadow of the
+information-theoretic state bound: a fixed $d$ cannot hold $D \gg d$ clean associations.
+Linear attention~\citep{katharopoulos2020transformers} is exactly this substitution---replacing
+the $n$-row KV cache with the fixed $m \times d$ matrix $S$---which is why it inherits the
+tradeoff. By Eckart--Young--Mirsky, the best rank-$r$ approximation of an ideal
+$n$-pattern memory incurs error equal to the discarded tail of singular values $\sum_{j>r}\sigma_j$,
+so a fixed state is a forced low-rank projection whose recall error is governed by the spectrum
+it discards \textbf{[PROVEN]}.
+
+\subsection{Information theory: the engine of the bound}
+For the Markov chain $\text{context } X \rightarrow \text{state} \rightarrow \text{answer}$, the
+data-processing inequality (DPI) gives
+\begin{equation}
+  I(\text{answer}; X) \;\le\; I(\text{state}; X) \;\le\; H(\text{state}) \;\le\; |\text{state}| \text{ bits}.
+\end{equation}
+This single line is the whole lower-bound program: to answer queries depending on $b$ bits of
+context, the state must carry $\gtrsim b$ bits \textbf{[PROVEN]}. Error tolerance enters through
+Fano's inequality, $H(X \mid \widehat{X}) \le H_b(\varepsilon) + \varepsilon \log(|\mathcal{X}|-1)$
+with $H_b$ the binary entropy \textbf{[PROVEN]}; this is the source of the $(1 - H_b(\varepsilon))$
+factor in our conjectured H1. Rate--distortion theory lower-bounds the bits needed to
+reconstruct a source of entropy $H$ to distortion $\le \mathcal{D}$ by $R(\mathcal{D})$
+\textbf{[PROVEN]}. We define the realized entropy of the key$\rightarrow$value map as the target
+quantity: with $D$ pairs and values uniform over $|U|$, the worst case carries
+$H = D \log |U|$ bits, but repetition, skew, and predictable bindings make $H \ll D\log|U|$---the
+regime our mechanism targets.
+
+\subsection{Communication complexity: how the bound is proven}
+In the one-way model, Alice holds $x$ and sends a single message to Bob, who holds $y$ and must
+output $f(x,y)$. For INDEX---Alice has $x \in \{0,1\}^N$, Bob has $i \in [N]$, output
+$x_i$---the randomized one-way communication complexity is $\Omega(N)$
+\citep{kremer1999randomized} \textbf{[PROVEN]}, because Alice cannot anticipate which bit Bob
+will query. The reduction to recurrent state is the key move: a causal recurrent model that
+reads the context and then the queries \emph{is} a one-way protocol, with the state at the
+context$\rightarrow$query boundary playing the role of Alice's message. Encoding an INDEX
+instance as a recall context forces the state to carry $\Omega(N)$ bits---the method behind
+BASED Thm.~3.1~\citep{arora2024based} and \citet{wen2025rnns}. Information-cost refinements of
+augmented INDEX give error-parameterized bounds; this is the machinery our H1 would invoke, and
+the reason H1 may reduce to a corollary rather than a new theorem.

@@ -1,0 +1,57 @@
+\section{Related Work}
+
+\paragraph{Subquadratic sequence architectures.}
+Linear attention~\citep{katharopoulos2020transformers} replaces the softmax with a kernel
+feature map $\phi$ and maintains a running state $S_t = S_{t-1} + \phi(k_t) v_t^\top$ of fixed
+size $O(d_\phi d_v)$, giving linear-time training and $O(1)$-in-$n$ inference. Structured
+state-space models---S4~\citep{gu2022s4} and the input-selective
+Mamba~\citep{gu2023mamba}---carry a per-channel linear recurrence with fixed state $O(Nd)$;
+S4 is an input-independent long convolution computable in $O(n\log n)$, while Mamba recovers
+content-based routing through a hardware-aware $O(n)$ parallel scan.
+RWKV~\citep{peng2023rwkv} combines token-shift mixing with a WKV recurrence carrying decayed
+running sums, a fixed $O(d)$ state per layer. All three share the structural property that
+their recurrent state does \emph{not} grow with $n$. For attention itself,
+FlashAttention~\citep{dao2022flashattention} shows the exact output is computable in $O(n)$
+memory by tiling and recomputation, so attention's quadratic cost is in \emph{time}, not
+necessarily memory; the KV cache, however, still grows as $O(nd)$.
+
+\paragraph{The recall--memory tradeoff and its lower bounds.}
+Zoology~\citep{arora2024zoology} isolates MQAR as the task on which efficient architectures
+underperform attention and shows empirically that recurrent models need hidden dimension
+$\approx n$ to solve it. BASED~\citep{arora2024based} turns this into theory: any model that
+depends causally on a binary input and solves MQAR requires $\Omega(n)$ bits of recurrent state
+(Thm.~3.1), by a one-way communication-complexity reduction in which the state at the
+context$\rightarrow$query boundary is the message. \citet{jelassi2024copying} prove a parallel
+result for copying---a generalized SSM with state set $\mathcal{S}$ has copying error
+$> 1 - |\mathcal{S}|/D^L$ on length-$L$ uniform strings---and \citet{wen2025rnns} show that
+$o(n)$-bit RNNs fail certain in-context retrieval tasks even with chain-of-thought, identifying
+in-context retrieval as the key bottleneck separating RNNs from transformers. These results are
+\textbf{[PROVEN]} and we treat them as the prior art our work must \emph{not} reclaim.
+
+\paragraph{Closest recent work and the open regime.}
+\citet{okpekpe2025revisiting} revisit associative recall in modern recurrent models and argue
+that part of the observed gap may be \emph{optimization-confounded} rather than a pure
+expressivity limit. Crucially, their study uses uniform synthetic inputs only and introduces no
+new mechanism. This leaves open precisely the regime we target: whether the recall--state
+requirement is governed by the \emph{realized entropy} $H$ of the key$\rightarrow$value map
+under a structured input distribution rather than by raw length $n$, and whether a recurrent
+mechanism can allocate state proportional to $H$. The optimization caveat strengthens, rather
+than weakens, the case for an instance-aware mechanism evaluated on a carefully tuned empirical
+Pareto frontier.
+
+\paragraph{Associative memory.}
+Classical Hopfield networks store $\approx 0.138N$ patterns before spurious minima dominate
+(Amit, Gutfreund \& Sompolinsky, 1985). Modern (continuous) Hopfield
+networks~\citep{ramsauer2021hopfield} have an update rule equal to softmax attention and storage
+that grows exponentially in the representation dimension, formalizing attention as a
+high-capacity associative memory whose price is the $O(n)$ KV store. This motivates our design
+move: seek modern-Hopfield-grade recall while paying only for the \emph{surprising} bindings
+through a sparse, entropy-gated store rather than the full cache. The communication-complexity
+backbone of the lower bounds traces to the randomized one-way complexity of
+INDEX~\citep{kremer1999randomized}.
+
+\paragraph{Adjacent but distinct.}
+\citet{kawata2026measure} prove a \emph{minimax} lower bound for transformers as
+measure-theoretic associative memory---a statistical / sample-complexity quantity, not the
+recurrent state \emph{size in bits} that governs the recall--memory tradeoff studied here. We
+track this framing but do not claim it.

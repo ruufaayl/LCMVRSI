@@ -1,0 +1,74 @@
+\section{Problem Statement and Hypotheses}
+
+\subsection{The MQAR task}
+Following Zoology~\citep{arora2024zoology}, fix a vocabulary $V$ with a set of keys
+$K \subset V$ and a disjoint set of values $U \subset V$. A context is a token sequence of
+length $n$ encoding $D$ distinct bindings $(k_i, v_i)$, $i \in [D]$, followed by (or interleaved
+with) $Q$ query positions; at a query position the input is a key bound earlier in the context
+and the model must emit the associated value. Because the binding $k_i \mapsto v_i$ is resampled
+per sequence, the answer cannot be memorized in the weights---it must be retrieved from context
+at inference time. We write $\varepsilon$ for the expected fraction of query positions answered
+incorrectly under the task distribution $\mathcal{D}$. For a recurrent model the resource of
+interest is the \emph{state}: the fixed-width summary carried across positions, with size $S$
+measured in bits. The central object of study is
+\begin{equation}
+  S^*(D, Q, \varepsilon; \mathcal{D}) \;=\; \text{minimum recurrent state (bits) to achieve query error} \le \varepsilon \text{ on } \mathcal{D}.
+\end{equation}
+
+\subsection{What is already proven (not our contribution)}
+We restate the prior art precisely so as never to reclaim it. Any model depending causally on a
+binary input and solving MQAR requires $\Omega(n)$ bits of recurrent state in the worst case
+(BASED Thm.~3.1~\citep{arora2024based}) \textbf{[PROVEN]}; copying requires linearly growing
+state~\citep{jelassi2024copying} \textbf{[PROVEN]}; and $o(n)$-bit RNNs fail in-context
+retrieval even with chain-of-thought~\citep{wen2025rnns} \textbf{[PROVEN]}. A from-scratch
+``recurrent models need $\Omega(n)$ state for recall'' theorem is therefore closed; our
+contribution must lie in a different regime or in the mechanism.
+
+\subsection{The open question}
+Every bound above is worst-case over (near-)uniform inputs, where the context carries
+$\Theta(n)$ bits. Structured streams have low realized entropy $H$: keys repeat, distributions
+are skewed, and the number of novel bindings carried can be $H \ll n$.
+
+\begin{quote}
+\emph{Is the recall--state requirement governed by the entropy $H$ of the
+key$\rightarrow$value map realized under $\mathcal{D}$, rather than by raw length $n$? And can a
+recurrent mechanism allocate state proportional to $H$---matching attention's recall on
+structured inputs at sub-$O(n^2)$ cost---while falling back to the $\Omega(n)$ worst case only
+when $H = \Theta(n)$?}
+\end{quote}
+
+\subsection{Hypotheses}
+
+\begin{conjecture}[H1: entropy-parameterized lower bound]
+For MQAR instances whose realized key$\rightarrow$value map has Shannon entropy $H$ bits,
+achieving query error $\le \varepsilon$ requires recurrent state
+\begin{equation}
+  S^*(\cdot) \;=\; \Omega\!\big( (1 - H_b(\varepsilon)) \cdot H \big) \text{ bits},
+\end{equation}
+where $H_b$ is the binary entropy. This recovers the $\Omega(n)$ bound exactly when
+$H = \Theta(n)$ and is strictly smaller when $H \ll n$.
+\end{conjecture}
+\noindent\textbf{Intended route.} Reduction from augmented INDEX with Alice's input drawn from an
+entropy-$H$ distribution, the state serving as the one-way message; the error $\varepsilon$
+enters through the information cost of an $\varepsilon$-error protocol.
+\textbf{Honesty flag.} This may follow with little new machinery from existing augmented-index /
+information-cost results. \emph{If so, we will demote H1 to a corollary and lead with the
+mechanism.} We will not present a routine reduction as a deep theorem.
+
+\begin{conjecture}[H2: entropy-gated sparse memory]
+A subquadratic backbone augmented with a small external associative memory whose \emph{writes}
+are gated by a surprise/entropy signal (write only novel, high-surprise bindings) and whose
+\emph{reads} use approximate nearest-key retrieval attains attention-level recall on structured
+MQAR ($H \ll n$) at state $\approx \Theta(H)$, pushing the empirical recall--memory Pareto
+frontier past matched-state-budget baselines, while matching them (no better, no worse) on
+uniform inputs where $H = \Theta(n)$.
+\end{conjecture}
+
+\subsection{Falsification plan}
+H1 is falsified if a construction solves entropy-$H$ MQAR with $o(H)$ state at fixed
+$\varepsilon$. H2 is falsified if, on structured MQAR at matched (state, compute) budgets, the
+gated memory fails to beat baselines on the accuracy-vs-resource frontier, or if any gain
+vanishes under properly tuned optimization (the caveat of \citet{okpekpe2025revisiting}). A
+rigorous negative result is reported as a contribution. The empirical study (H2) is the primary
+deliverable and is fully reproducible on the target hardware (a 4\,GB laptop GPU); H1 is treated
+as theory support to be proven or honestly demoted.

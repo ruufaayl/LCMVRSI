@@ -5,3 +5,133 @@
   booktitle = {Advances in Neural Information Processing Systems},
   year      = {2017}
 }
+
+% --- Recall vs. recurrent-state tradeoff (verified 2026-05-29) ---
+
+@inproceedings{arora2024zoology,
+  title        = {Zoology: Measuring and Improving Recall in Efficient Language Models},
+  author       = {Arora, Simran and Eyuboglu, Sabri and Timalsina, Aman and Johnson, Isys
+                  and Poli, Michael and Zou, James and Rudra, Atri and R{\'e}, Christopher},
+  booktitle    = {International Conference on Learning Representations (ICLR)},
+  year         = {2024},
+  eprint       = {2312.04927},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{arora2024based,
+  title        = {Simple Linear Attention Language Models Balance the Recall--Throughput Tradeoff},
+  author       = {Arora, Simran and Eyuboglu, Sabri and Zhang, Michael and Timalsina, Aman
+                  and Alberti, Silas and Zinsley, Dylan and Zou, James and Rudra, Atri
+                  and R{\'e}, Christopher},
+  booktitle    = {Proceedings of the 41st International Conference on Machine Learning (ICML)},
+  year         = {2024},
+  eprint       = {2402.18668},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{jelassi2024copying,
+  title        = {Repeat After Me: Transformers are Better than State Space Models at Copying},
+  author       = {Jelassi, Samy and Brandfonbrener, David and Kakade, Sham M. and Malach, Eran},
+  booktitle    = {Proceedings of the 41st International Conference on Machine Learning (ICML)},
+  year         = {2024},
+  eprint       = {2402.01032},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{wen2025rnns,
+  title        = {{RNN}s are not Transformers (Yet): The Key Bottleneck on In-context Retrieval},
+  author       = {Wen, Kaiyue and Dang, Xingyu and Lyu, Kaifeng},
+  booktitle    = {International Conference on Learning Representations (ICLR)},
+  year         = {2025},
+  eprint       = {2402.18510},
+  archivePrefix = {arXiv}
+}
+
+@misc{okpekpe2025revisiting,
+  title        = {Revisiting Associative Recall in Modern Recurrent Models},
+  author       = {Okpekpe, Destiny and Orvieto, Antonio},
+  year         = {2025},
+  eprint       = {2508.19029},
+  archivePrefix = {arXiv}
+}
+
+@misc{kawata2026measure,
+  title        = {Transformers as Measure-Theoretic Associative Memory:
+                  A Statistical Perspective and Minimax Optimality},
+  author       = {Kawata, Ryotaro and Suzuki, Taiji},
+  year         = {2026},
+  eprint       = {2602.01863},
+  archivePrefix = {arXiv}
+}
+
+% --- Architectures: complexity & recurrent-state derivations (verified 2026-05-29) ---
+
+@inproceedings{katharopoulos2020transformers,
+  title        = {Transformers are {RNN}s: Fast Autoregressive Transformers with Linear Attention},
+  author       = {Katharopoulos, Angelos and Vyas, Apoorv and Pappas, Nikolaos and Fleuret, Fran{\c{c}}ois},
+  booktitle    = {Proceedings of the 37th International Conference on Machine Learning (ICML)},
+  year         = {2020},
+  eprint       = {2006.16236},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{gu2022s4,
+  title        = {Efficiently Modeling Long Sequences with Structured State Spaces},
+  author       = {Gu, Albert and Goel, Karan and R{\'e}, Christopher},
+  booktitle    = {International Conference on Learning Representations (ICLR)},
+  year         = {2022},
+  eprint       = {2111.00396},
+  archivePrefix = {arXiv}
+}
+
+@misc{gu2023mamba,
+  title        = {Mamba: Linear-Time Sequence Modeling with Selective State Spaces},
+  author       = {Gu, Albert and Dao, Tri},
+  year         = {2023},
+  eprint       = {2312.00752},
+  archivePrefix = {arXiv},
+  note         = {Later published at COLM 2024}
+}
+
+@inproceedings{peng2023rwkv,
+  title        = {{RWKV}: Reinventing {RNN}s for the Transformer Era},
+  author       = {Peng, Bo and others},
+  booktitle    = {Findings of the Association for Computational Linguistics: EMNLP 2023},
+  pages        = {14048--14077},
+  year         = {2023},
+  eprint       = {2305.13048},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{dao2022flashattention,
+  title        = {{FlashAttention}: Fast and Memory-Efficient Exact Attention with {IO}-Awareness},
+  author       = {Dao, Tri and Fu, Daniel Y. and Ermon, Stefano and Rudra, Atri and R{\'e}, Christopher},
+  booktitle    = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year         = {2022},
+  eprint       = {2205.14135},
+  archivePrefix = {arXiv}
+}
+
+% --- Associative memory & communication-complexity foundations (verified 2026-05-29) ---
+
+@inproceedings{ramsauer2021hopfield,
+  title        = {Hopfield Networks is All You Need},
+  author       = {Ramsauer, Hubert and Sch{\"a}fl, Bernhard and Lehner, Johannes and Seidl, Philipp
+                  and Widrich, Michael and Adler, Thomas and Gruber, Lukas and Holzleitner, Markus
+                  and Pavlovi{\'c}, Milena and Sandve, Geir Kjetil and Greiff, Victor and Kreil, David
+                  and Kopp, Michael and Klambauer, G{\"u}nter and Brandstetter, Johannes and Hochreiter, Sepp},
+  booktitle    = {International Conference on Learning Representations (ICLR)},
+  year         = {2021},
+  eprint       = {2008.02217},
+  archivePrefix = {arXiv}
+}
+
+@article{kremer1999randomized,
+  title        = {On Randomized One-Round Communication Complexity},
+  author       = {Kremer, Ilan and Nisan, Noam and Ron, Dana},
+  journal      = {Computational Complexity},
+  volume       = {8},
+  number       = {1},
+  pages        = {21--49},
+  year         = {1999}
+}

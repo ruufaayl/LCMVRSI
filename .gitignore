@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Run logs (figures are committed; raw runs are not)
+results/runs/
+runs/
+*.log
+
+# LaTeX build artifacts
+paper/*.pdf
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.out
+paper/*.toc
+paper/_build/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

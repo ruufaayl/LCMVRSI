@@ -1,0 +1,18 @@
+seed: 0
+model:
+  name: transformer
+  params:
+    d_model: 64
+    n_layers: 2
+    n_heads: 2
+benchmark:
+  name: mqar
+  params:
+    vocab_size: 64
+    seq_len: 128
+    num_pairs: 8
+train:
+  steps: 1000
+  batch_size: 32
+  lr: 0.001
+  device: cpu

@@ -22,6 +22,12 @@ class TrainConfig(BaseModel):
     batch_size: int = 32
     lr: float = 1e-3
     device: str = "cpu"
+    weight_decay: float = 0.0
+    # Fraction of steps spent linearly warming the LR up; the remainder follows a cosine
+    # decay to ~0. 0.0 disables the schedule (constant LR), preserving legacy behavior.
+    warmup_frac: float = 0.0
+    # Global gradient-norm clip applied before each optimizer step. 0.0 disables clipping.
+    max_grad_norm: float = 0.0
 
 
 class ExperimentConfig(BaseModel):

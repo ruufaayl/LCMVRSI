@@ -24,12 +24,37 @@ uv run ruff check .      # lint
 GPU note: `uv sync` installs the CPU build of PyTorch by default. For your CUDA GPU,
 install the matching CUDA wheel per https://pytorch.org/get-started/locally/.
 
+## Experiments
+Tiny by default — every command below runs on CPU in minutes.
+```bash
+# Train one model on MQAR from a YAML config; writes a self-describing result JSON to results/
+uv run python experiments/run.py -c configs/base.yaml
+
+# Recall–memory sweep: held-out recall vs. number of key–value pairs, per architecture.
+# Writes results/recall_sweep_summary.json (committed), per-run JSONs (results/runs/, gitignored),
+# and the figure results/figures/recall_vs_pairs.png (committed).
+uv run --extra viz python experiments/sweep_recall.py
+
+# Complexity/memory table, generated from the live models (cross-checks docs/architecture-review):
+uv run python experiments/complexity_table.py -o results/complexity_table.md
+
+# Interactive dashboard over results/ (needs the viz extra):
+uv run --extra viz streamlit run dashboard/app.py
+```
+Each result JSON records the config, the model's `complexity()`/`state_size`, the training
+curve and throughput, held-out recall, and the software environment (incl. git commit) — so
+every number is reproducible and traceable.
+
 ## Layout
-- `src/lcmvrsi/` — package: `models/`, `benchmarks/`, `train/`, `utils/`
+- `src/lcmvrsi/` — package: `models/`, `benchmarks/`, `train/` (runner, sweep, LR schedule),
+  `viz/`, `utils/`, `analysis.py` (complexity table)
 - `configs/` — YAML experiment configs (tiny-by-default; scale-up provided later)
-- `experiments/`, `dashboard/` — runner CLI and Streamlit dashboard (later milestones)
+- `experiments/` — CLIs: `run.py` (single run), `sweep_recall.py` (recall sweep), `complexity_table.py`
+- `dashboard/` — Streamlit app over `results/`
+- `results/` — outputs: committed summary JSON + `figures/`; raw per-run JSONs in `runs/` (gitignored)
 - `paper/` — LaTeX sources; PDF built by CI
 - `docs/` — knowledge map, architecture review, problem formalization
 
 ## Status
-Milestone **M0 (foundation)**. Roadmap M0→M5 in the design spec.
+Milestone **M2 (vertical slice)** — runnable model/benchmark/runner/sweep/dashboard, all tested.
+Roadmap M0→M5 in the design spec.

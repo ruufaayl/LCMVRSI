@@ -6,6 +6,11 @@ import torch
 
 from lcmvrsi.models.base import SequenceModel
 
+# Label ignored by the loss (matches torch's cross_entropy default). Benchmarks set
+# non-supervised positions to this value; trainers pass it as `ignore_index` so that only
+# the positions a benchmark actually scores contribute to the loss.
+IGNORE_INDEX = -100
+
 
 class Benchmark(ABC):
     """Common interface for synthetic sequence benchmarks."""

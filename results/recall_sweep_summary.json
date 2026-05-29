@@ -1,0 +1,121 @@
+{
+  "setup": {
+    "model_names": [
+      "transformer",
+      "linear_attention"
+    ],
+    "num_pairs_list": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "vocab_size": 64,
+    "seq_len": 48,
+    "d_model": 64,
+    "n_layers": 2,
+    "n_heads": 4,
+    "steps": 4000,
+    "batch_size": 32,
+    "lr": 0.002,
+    "weight_decay": 0.01,
+    "warmup_frac": 0.1,
+    "max_grad_norm": 1.0,
+    "seed": 0,
+    "device": "cpu",
+    "eval_n": 256
+  },
+  "points": [
+    {
+      "model": "transformer",
+      "num_pairs": 1,
+      "recall_accuracy": 1.0,
+      "num_queries": 256,
+      "state_size_bytes": 0,
+      "final_loss": 0.00029899165383540094,
+      "param_count": 111424
+    },
+    {
+      "model": "transformer",
+      "num_pairs": 2,
+      "recall_accuracy": 1.0,
+      "num_queries": 512,
+      "state_size_bytes": 0,
+      "final_loss": 0.00028875801945105195,
+      "param_count": 111424
+    },
+    {
+      "model": "transformer",
+      "num_pairs": 4,
+      "recall_accuracy": 1.0,
+      "num_queries": 1024,
+      "state_size_bytes": 0,
+      "final_loss": 0.0002894446370191872,
+      "param_count": 111424
+    },
+    {
+      "model": "transformer",
+      "num_pairs": 8,
+      "recall_accuracy": 1.0,
+      "num_queries": 2048,
+      "state_size_bytes": 0,
+      "final_loss": 0.00037201453233137727,
+      "param_count": 111424
+    },
+    {
+      "model": "transformer",
+      "num_pairs": 16,
+      "recall_accuracy": 1.0,
+      "num_queries": 4096,
+      "state_size_bytes": 0,
+      "final_loss": 0.0002178144350182265,
+      "param_count": 111424
+    },
+    {
+      "model": "linear_attention",
+      "num_pairs": 1,
+      "recall_accuracy": 1.0,
+      "num_queries": 256,
+      "state_size_bytes": 8704,
+      "final_loss": 0.0003009393985848874,
+      "param_count": 111424
+    },
+    {
+      "model": "linear_attention",
+      "num_pairs": 2,
+      "recall_accuracy": 1.0,
+      "num_queries": 512,
+      "state_size_bytes": 8704,
+      "final_loss": 0.0016701086424291134,
+      "param_count": 111424
+    },
+    {
+      "model": "linear_attention",
+      "num_pairs": 4,
+      "recall_accuracy": 0.3037109375,
+      "num_queries": 1024,
+      "state_size_bytes": 8704,
+      "final_loss": 1.3218587636947632,
+      "param_count": 111424
+    },
+    {
+      "model": "linear_attention",
+      "num_pairs": 8,
+      "recall_accuracy": 0.20361328125,
+      "num_queries": 2048,
+      "state_size_bytes": 8704,
+      "final_loss": 1.95110285282135,
+      "param_count": 111424
+    },
+    {
+      "model": "linear_attention",
+      "num_pairs": 16,
+      "recall_accuracy": 0.15087890625,
+      "num_queries": 4096,
+      "state_size_bytes": 8704,
+      "final_loss": 2.4884748458862305,
+      "param_count": 111424
+    }
+  ]
+}

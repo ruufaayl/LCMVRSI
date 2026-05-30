@@ -1,0 +1,27 @@
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+We set out to study the recall--memory tradeoff in subquadratic sequence models with maximal
+honesty, and report three kinds of outcome. \emph{Theory:} we prove an entropy floor on recurrent
+state (Proposition~\ref{prop:floor}), reparameterizing the known length-based $\Omega(n)$ bound by
+the realized key$\rightarrow$value entropy $H(M)$; this is a modest, standard-technique result that
+isolates the low-entropy regime as the only place a recurrent mechanism could win. \emph{Empirics:}
+on a tested, reproducible harness of five architectures and five recall tasks, we reproduce the
+recall wall and add the observation that \emph{content-based addressing}---not merely a growing
+state---is what separates the transformer from the rest (a non-selective SSM and a content-blind
+long convolution both fail). \emph{Mechanism:} our surprise-gated sparse-memory proposal (H2) is,
+so far, a \textbf{negative result}: under recall-only supervision the gate does not sparsify, so it
+neither saves state nor beats baselines.
+
+We deliberately do not overclaim. The novel theorem is a corollary-grade reparameterization; the
+mechanism is unconfirmed. What the project does establish is a rigorous, falsifiable, fully
+reproducible pipeline---and an honest map of what works, what is already known, and what failed.
+
+\paragraph{Future work, in priority order.}
+(1) \textbf{Fix the gate signal:} add an auxiliary next-token loss so the backbone learns the
+predictable structure and surprise becomes informative---the most direct test of whether H2's
+state savings are achievable. (2) \textbf{Calibrate the structured task} so the upper-bound
+transformer solves it, making the H2 comparison meaningful. (3) \textbf{Multi-seed and scale}
+studies with error bars. (4) Tighten Proposition~\ref{prop:floor} in $\varepsilon$ and extend it
+to segment-recurrent / chunked-attention hybrids that partially escape assumption~(A2). A
+confirmed or cleanly-refuted H2 under (1)--(2) is the natural next milestone.

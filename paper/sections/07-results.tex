@@ -30,6 +30,24 @@ rwkv & $1{,}536$ & $0.18$ \\
 \end{tabular}
 \end{center}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{recall_vs_pairs.png}
+\caption{Held-out MQAR recall vs.\ number of key$\rightarrow$value pairs (matched budget). The
+transformer (growing cache) stays at $1.0$; linear attention collapses once the number of
+associations exceeds its fixed-rank state. \textbf{[EMPIRICAL]}, reproducing prior art.}
+\label{fig:recall-vs-pairs}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{frontier_mqar.png}
+\caption{Recall--memory (left) and recall--throughput (right) frontiers across five
+architectures on MQAR at $D=8$. Only the content-addressed transformer reaches high recall;
+fixed-state and content-independent models sit near chance regardless of their state budget.}
+\label{fig:frontier}
+\end{figure}
+
 \noindent Two findings beyond the known wall: a \emph{non-selective} SSM collapses to chance
 (content-independent dynamics cannot address by content---the gap Mamba's selectivity targets),
 and \emph{Hyena} fails despite having \emph{no} fixed state, because its convolutional filter is
@@ -54,6 +72,16 @@ sgsm (no gate) & $0.22$ & $1.00$ & $49{,}152$ \\
 \hline
 \end{tabular}
 \end{center}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{h2_structured_recall.png}
+\caption{H2 on structured recall. Left: recall vs.\ effective state (realized store for SGSM).
+Right: the surprise-gate write fraction. SGSM writes $\sim 98\%$ of tokens (no sparsification) and
+matches---does not beat---the baselines; no model solved the task at this scale. A negative
+result, reported per the falsification plan.}
+\label{fig:h2}
+\end{figure}
 
 \noindent The gate did not sparsify (it wrote $\sim 98\%$ of tokens), so SGSM's state stayed near
 its worst case and it matched, rather than beat, the baselines. The diagnosed cause is a

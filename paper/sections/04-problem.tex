@@ -1,4 +1,5 @@
 \section{Problem Statement and Hypotheses}
+\label{sec:problem}
 
 \subsection{The MQAR task}
 Following Zoology~\citep{arora2024zoology}, fix a vocabulary $V$ with a set of keys
@@ -39,21 +40,18 @@ when $H = \Theta(n)$?}
 
 \subsection{Hypotheses}
 
-\begin{conjecture}[H1: entropy-parameterized lower bound]
-For MQAR instances whose realized key$\rightarrow$value map has Shannon entropy $H$ bits,
-achieving query error $\le \varepsilon$ requires recurrent state
-\begin{equation}
-  S^*(\cdot) \;=\; \Omega\!\big( (1 - H_b(\varepsilon)) \cdot H \big) \text{ bits},
-\end{equation}
-where $H_b$ is the binary entropy. This recovers the $\Omega(n)$ bound exactly when
-$H = \Theta(n)$ and is strictly smaller when $H \ll n$.
-\end{conjecture}
-\noindent\textbf{Intended route.} Reduction from augmented INDEX with Alice's input drawn from an
-entropy-$H$ distribution, the state serving as the one-way message; the error $\varepsilon$
-enters through the information cost of an $\varepsilon$-error protocol.
-\textbf{Honesty flag.} This may follow with little new machinery from existing augmented-index /
-information-cost results. \emph{If so, we will demote H1 to a corollary and lead with the
-mechanism.} We will not present a routine reduction as a deep theorem.
+\paragraph{H1 (entropy-parameterized lower bound) --- established as a proposition.}
+The lower-bound half of H1 is proven in Section~\ref{sec:theory}: under the recurrent-bottleneck
+assumption, Proposition~\ref{prop:floor} gives
+$S \ge H(M) - D\,[H_b(\varepsilon) + \varepsilon \log_2(|U|-1)]$, which recovers the $\Omega(n)$
+bound when the realized map entropy $H(M) = \Theta(n)$ and is far smaller when $H(M) \ll n$
+\textbf{[PROVEN]}. As anticipated by our honesty flag, the proof is standard (data processing and
+Fano), so we present it as a proposition rather than a deep theorem and \emph{retire} the earlier
+guessed form $\Omega((1 - H_b(\varepsilon))H)$; the contribution is the entropy
+\emph{reparameterization} of the known length-based bound, which isolates the low-entropy regime
+where a recurrent mechanism is not information-theoretically barred from attention-level recall.
+What a lower bound cannot decide is \emph{achievability}---whether a mechanism actually reaches
+$S \approx \Theta(H(M))$---which is the substance of H2 and is settled only empirically.
 
 \begin{conjecture}[H2: entropy-gated sparse memory]
 A subquadratic backbone augmented with a small external associative memory whose \emph{writes}
@@ -65,10 +63,11 @@ uniform inputs where $H = \Theta(n)$.
 \end{conjecture}
 
 \subsection{Falsification plan}
-H1 is falsified if a construction solves entropy-$H$ MQAR with $o(H)$ state at fixed
-$\varepsilon$. H2 is falsified if, on structured MQAR at matched (state, compute) budgets, the
-gated memory fails to beat baselines on the accuracy-vs-resource frontier, or if any gain
-vanishes under properly tuned optimization (the caveat of \citet{okpekpe2025revisiting}). A
-rigorous negative result is reported as a contribution. The empirical study (H2) is the primary
-deliverable and is fully reproducible on the target hardware (a 4\,GB laptop GPU); H1 is treated
-as theory support to be proven or honestly demoted.
+Proposition~\ref{prop:floor} holds under assumption (A2) (a fixed-width state through which all
+answers factor); a model that re-reads the context, such as attention, is simply outside its
+scope rather than a counterexample. The empirically falsifiable claim is therefore H2: it is
+falsified if, on structured MQAR at matched (state, compute) budgets, the gated memory fails to
+beat baselines on the accuracy-vs-resource frontier, or if any apparent gain vanishes under
+properly tuned optimization (the caveat of \citet{okpekpe2025revisiting}). A rigorous negative
+result is reported as a contribution. The empirical study (H2) is the primary deliverable and is
+fully reproducible on the target hardware (a 4\,GB laptop GPU).

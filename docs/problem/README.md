@@ -93,20 +93,19 @@ Pareto-frontier study (which is what we can actually run on a laptop).
 
 ## 5. Hypothesis, theorem attempt, and falsification plan
 
-**H1 — entropy-parameterized lower bound [CONJECTURE].**
-For MQAR instances whose realized key→value map has Shannon entropy `H` (bits), achieving
-query error `≤ ε` requires recurrent state
-`S*(·) = Ω( (1−H_b(ε)) · H )` bits, where `H_b` is binary entropy. This **recovers** BASED's
-`Ω(n)` exactly when `H = Θ(n)` (uniform worst case) and is **strictly smaller** when `H ≪ n`.
+**H1 — entropy floor on recurrent state [PROVEN as a proposition; full proof in `docs/theory`].**
+Under the recurrent-bottleneck assumption (every answer factors through a fixed `S`-bit state),
+achieving average per-query error `≤ ε` requires
+`S ≥ H(M) − D·[ H_b(ε) + ε·log₂(|U|−1) ]` bits (Proposition 1; data-processing inequality + Fano).
+This **recovers** BASED's `Ω(n)` exactly when `H(M) = Θ(n)` (uniform worst case) and is **far
+smaller** when `H(M) ≪ n`.
 
-- *Intended route:* reduction from **augmented-INDEX** with Alice's input drawn from an
-  entropy-`H` distribution; the state is the one-way message. Error `ε` enters via the
-  information cost of an `ε`-error protocol.
-- *Honesty flag.* This refinement may follow with little new machinery from existing
-  augmented-index / information-cost results (e.g., the `Ω(1/ε²)` distinct-elements streaming
-  bounds and augmented-index tradeoffs). **If so, we will say so explicitly and demote H1 to a
-  corollary**, leading instead with the mechanism (H2). We will not dress up a routine
-  reduction as a deep theorem.
+- *Honesty flag (now resolved).* As anticipated, the proof uses only standard machinery
+  (Fano + DPI), so we present it as a **proposition, not a deep theorem**, and **retire** the
+  earlier guessed form `Ω((1−H_b(ε))·H)` in favor of the proven expression above. The defensible
+  contribution is the entropy **reparameterization** of the known length-based bound.
+- *What is not proven:* **achievability** — that a mechanism actually reaches `S ≈ Θ(H(M))` — is a
+  separate question (H2), decided empirically; a lower bound implies nothing about it.
 
 **H2 — entropy-gated sparse memory (the mechanism) [CONJECTURE → target [EMPIRICAL]].**
 Augment a subquadratic backbone with a small **external associative memory** whose **writes
@@ -134,14 +133,16 @@ empirical **recall–memory Pareto frontier** past matched-state-budget Mamba / 
 | Copying needs linear state | **[PROVEN]** | Jelassi et al. [jelassi2024copying] |
 | `o(n)`-bit RNNs fail in-context retrieval even w/ CoT | **[PROVEN]** | Wen et al. [wen2025rnns] |
 | Worst-case gap may be optimization-confounded | **[EMPIRICAL]** | Okpekpe & Orvieto [okpekpe2025revisiting] |
-| **Entropy-parameterized** recall–state bound `Ω(g(H,ε))` | **[CONJECTURE]** | **this project (H1)** |
+| **Entropy floor** `S ≥ H(M) − D·[H_b(ε)+ε·log₂(|U|−1)]` (Prop. 1, `docs/theory`) | **[PROVEN]** (recurrent-bottleneck; standard technique) | **this project — H1 framing** |
 | **Entropy-gated sparse-memory** mechanism beats matched-budget baselines on structured MQAR | **[CONJECTURE]** | **this project (H2)** |
 
 Our defensible novelty, if it survives, is therefore **(i)** the *entropy parameterization /
 framing* of an existing bound, **(ii)** the *entropy-gated mechanism* (no prior work in §6
-proposes one), and **(iii)** the *structured-input empirical Pareto result*. We lead with
-(ii)+(iii) — they are fully reproducible on the target hardware (a 4 GB laptop GPU) — and
-treat (i) as theory support to be proven or honestly demoted.
+proposes one), and **(iii)** the *structured-input empirical Pareto result*. Item (i) is now
+**established** as Proposition 1 (`docs/theory`) under the recurrent-bottleneck assumption, and
+honestly framed as a reparameterization (standard Fano + DPI), not a deep theorem. We lead with
+(ii)+(iii) — they are fully reproducible on the target hardware (a 4 GB laptop GPU) — with (i) as
+proven theory support.
 
 *Adjacent but distinct:* [kawata2026measure] proves a **minimax** lower bound for
 **Transformers** as measure-theoretic associative memory (statistical/sample complexity, not

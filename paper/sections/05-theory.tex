@@ -1,0 +1,69 @@
+\section{Theoretical Analysis: An Entropy Floor on Recurrent State}
+\label{sec:theory}
+
+We make the recall--state obstruction precise and \emph{reparameterize it by realized entropy}.
+The result below is a necessary condition (a lower bound on state); it does not assert that any
+mechanism attains it (achievability is the separate question of Section~\ref{sec:problem}'s H2).
+The proof uses only the data-processing inequality and Fano's inequality---standard machinery---so
+we state it as a Proposition and locate the contribution in the framing, not the technique.
+
+\paragraph{Assumptions.}
+\textbf{(A1)} An MQAR instance encodes a key$\rightarrow$value map $M$: distinct keys
+$k_1,\dots,k_D$ at known positions bound to values $V=(v_1,\dots,v_D)\in U^D$, drawn from a task
+distribution $\mathcal{D}$ with Shannon entropy $H(M)$ bits; with key positions known,
+$H(M)=H(V)$. \textbf{(A2)} The model is \emph{$S$-bit recurrent}: it summarizes the context into a
+state $Z=g(\text{context})\in\{0,1\}^S$ (so $H(Z)\le S$), and every answer depends on the context
+only through $Z$, i.e.\ for a queried key $k$ the prediction is $\hat v=h(Z,k)$. State-space models,
+linear attention, and RWKV satisfy (A2); softmax attention does not (it reads an $\Theta(n)$-bit
+cache). \textbf{(A3)} Querying all $D$ keys gives $\hat V=(\hat v_1,\dots,\hat v_D)$, a function of
+$Z$, with average per-query error $\varepsilon:=\tfrac1D\sum_i \Pr[\hat v_i\neq v_i]\le \tfrac12$.
+
+\begin{proposition}[Entropy floor on recurrent state]
+\label{prop:floor}
+Under \textnormal{(A1)--(A3)},
+\[
+  S \;\ge\; H(M) \;-\; D\,\bigl[\,H_b(\varepsilon) + \varepsilon\,\log_2(|U|-1)\,\bigr]\quad\text{bits,}
+\]
+where $H_b$ is the binary entropy function.
+\end{proposition}
+
+\begin{proof}
+\emph{(i) Data processing.} By (A2), $\hat V$ is a deterministic function of $Z$ (keys are known),
+so $V \to \text{context} \to Z \to \hat V$ is a Markov chain and
+$I(V;\hat V)\le I(V;Z)\le H(Z)\le S$.
+\emph{(ii) Fano.} For each query, $\hat v_i$ predicts $v_i\in U$ with error $P_{e,i}$; Fano gives
+$H(v_i\mid \hat v_i)\le H_b(P_{e,i})+P_{e,i}\log_2(|U|-1)$. Conditioning cannot increase entropy, so
+$H(V\mid\hat V)\le\sum_i H(v_i\mid\hat v_i)$, and by concavity of $H_b$ with
+$\tfrac1D\sum_i P_{e,i}=\varepsilon\le\tfrac12$,
+\[
+  H(V\mid \hat V)\;\le\; D\,H_b(\varepsilon) + D\,\varepsilon\,\log_2(|U|-1).
+\]
+\emph{(iii) Combine.} Since $H(M)=H(V)$, $I(V;\hat V)=H(V)-H(V\mid\hat V)\ge H(M)-D[H_b(\varepsilon)+\varepsilon\log_2(|U|-1)]$.
+Chaining with (i) yields the claim.
+\end{proof}
+
+\begin{corollary}[Exact recall and recovery of the known bound]
+\label{cor:recover}
+At $\varepsilon=0$, $S\ge H(M)$. On the uniform worst case (distinct keys, i.i.d.\ uniform
+values) $H(M)=D\log_2|U|$; with $D=\Theta(n)$ this is $\Theta(n)$, so $S=\Omega(n)$, recovering the
+length-based bound of \citet{arora2024based} as the special case $H(M)=\Theta(n)$.
+\end{corollary}
+
+\begin{corollary}[Low-entropy regime]
+\label{cor:lowentropy}
+If the realized map is structured ($H(M)\ll n$: repeated keys, skewed values, few novel
+bindings), the floor is $\ll n$. Proposition~\ref{prop:floor} then does \emph{not} bar an $o(n)$-state
+recurrent model from attention-level recall; whether one is \emph{achievable} is open (H2).
+\end{corollary}
+
+\paragraph{Honest positioning.}
+The technique is textbook, and we claim no novelty in it. Prior bounds
+\citep{arora2024based,jelassi2024copying,wen2025rnns} are stated in raw length $n$ / worst case;
+reparameterizing by realized map entropy $H(M)$ makes explicit that the obstruction scales with
+\emph{information content}, not length, and isolates the structured regime
+(Corollary~\ref{cor:lowentropy}) where a mechanism could help. This corrects an earlier guessed
+form $\Omega((1-H_b(\varepsilon))H)$, which we retire in favor of the proven expression above. The
+bound is informative only when the Fano slack is small relative to $H(M)$ (small $\varepsilon$);
+it degrades to the trivial $S\ge 0$ as $\varepsilon\to\tfrac12$, and it constrains only models
+obeying (A2). Achievability of $S=\Theta(H(M))$---the entropy-gated mechanism---remains
+\textbf{[CONJECTURE]} and is evaluated empirically.

@@ -5,6 +5,8 @@
 \usepackage{hyperref}
 
 \newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
 \newtheorem{conjecture}{Conjecture}
 
 \title{Long-Context Memory, Verifiable Reasoning, and Scalable Intelligence:\\
@@ -21,13 +23,16 @@ key--value cache with a fixed-size recurrent state, and pay for it on associativ
 known information-theoretic bound (BASED, Thm.~3.1) shows any causal recurrent model needs
 $\Omega(n)$ bits of state to solve multi-query associative recall (MQAR) in the worst case. We do
 not reclaim that bound. Instead we observe it is worst-case over near-uniform inputs, whereas
-structured streams realize far lower key$\rightarrow$value entropy $H \ll n$. We state two
-hypotheses: an entropy-parameterized refinement of the lower bound,
-$\Omega((1-H_b(\varepsilon))H)$ bits, that recovers $\Omega(n)$ when $H = \Theta(n)$
-\textbf{[CONJECTURE]}, flagged as a possible corollary of existing information-cost arguments;
-and a surprise/entropy-gated sparse external memory whose state grows toward $\Theta(H)$,
-intended to push the empirical recall--memory Pareto frontier on structured inputs while matching
-baselines in the uniform worst case \textbf{[CONJECTURE]}. Every claim is tagged \textbf{[PROVEN]}
+structured streams realize far lower key$\rightarrow$value entropy $H \ll n$. We make this
+precise: under the standard recurrent-bottleneck assumption we prove an \emph{entropy floor}
+$S \ge H(M) - D\,[H_b(\varepsilon) + \varepsilon \log_2(|U|-1)]$ on the state
+(Proposition~\ref{prop:floor}, via data processing and Fano), which recovers the $\Omega(n)$ bound
+when the realized key$\rightarrow$value entropy $H(M) = \Theta(n)$ and is far smaller when
+$H(M) \ll n$ \textbf{[PROVEN]}; the technique is standard and the contribution is the entropy
+\emph{reparameterization}. Building on it, we propose a surprise/entropy-gated sparse external
+memory whose state grows toward $\Theta(H)$, intended to push the empirical recall--memory Pareto
+frontier on structured inputs while matching baselines in the uniform worst case
+\textbf{[CONJECTURE]}; a lower bound says nothing about achievability, which we test empirically. Every claim is tagged \textbf{[PROVEN]}
 / \textbf{[EMPIRICAL]} / \textbf{[CONJECTURE]}; the empirical Pareto study is the primary
 deliverable, with results---including negative ones---populated in later milestones.
 \end{abstract}
@@ -36,6 +41,7 @@ deliverable, with results---including negative ones---populated in later milesto
 \input{sections/02-related-work}
 \input{sections/03-foundations}
 \input{sections/04-problem}
+\input{sections/05-theory}
 
 \bibliographystyle{plainnat}
 \bibliography{refs}

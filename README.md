@@ -1,7 +1,15 @@
 # LCMVRSI
 
+[![CI](https://github.com/ruufaayl/LCMVRSI/actions/workflows/ci.yml/badge.svg)](https://github.com/ruufaayl/LCMVRSI/actions/workflows/ci.yml)
+[![Paper](https://github.com/ruufaayl/LCMVRSI/actions/workflows/paper.yml/badge.svg)](https://github.com/ruufaayl/LCMVRSI/actions/workflows/paper.yml)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Tests](https://img.shields.io/badge/tests-109%20passing-brightgreen)
+
 **Long-Context Memory, Verifiable Reasoning, and Scalable Intelligence** — a research
 scaffold for studying the **recall–memory tradeoff** in subquadratic sequence models.
+Six architectures and five synthetic recall tasks on one tested interface, a **proven**
+recall–state lower bound, and an honestly-reported attempt at a novel memory mechanism.
 
 > **Honesty discipline.** Every non-trivial claim in this repo and the paper is tagged
 > **[PROVEN]**, **[EMPIRICAL]**, or **[CONJECTURE]**. No fabricated theorems, citations,
@@ -30,6 +38,31 @@ first experiment is an honest **negative** result (see `docs/theory`, `docs/mech
 (needle-in-a-haystack), and `structured_recall` (predictable cyclic filler + sparse novel
 bindings; the H2 testbed). The subquadratic/fixed-state models are simplified, honestly-named
 baselines — not the original authors' full kernels.
+
+## Results
+Every figure is reproducible via the [Experiments](#experiments) commands. Single-seed and
+small-scale by design (see the paper's Limitations) — values are indicative, not definitive.
+
+**1 · The recall wall (MQAR).** As the number of key→value pairs grows, the transformer (growing
+cache) holds at ~100% recall while linear attention collapses — the fixed-state bottleneck made
+visible. *[EMPIRICAL]*
+
+![Recall vs. number of pairs](results/figures/recall_vs_pairs.png)
+
+**2 · The recall–memory frontier (five architectures).** Only the content-addressed transformer
+solves MQAR; fixed-state and content-independent models sit near chance *regardless of state
+budget*. Two non-obvious reads: a non-selective SSM is ≈chance (the gap Mamba's selectivity
+targets), and Hyena fails *despite no fixed state* — so content-based addressing is an orthogonal
+requirement the Ω(n) bound doesn't capture. *[EMPIRICAL]*
+
+![Recall–memory frontier](results/figures/frontier_mqar.png)
+
+**3 · H2 mechanism — an honest negative.** Our surprise-gated memory (`sgsm`) did **not** sparsify
+under recall-only supervision (it wrote ~98% of tokens), so it matched rather than beat the
+baselines. The diagnosed cause (no language-model signal on the filler) and the fix (an auxiliary
+next-token loss) are documented in [`docs/mechanism`](docs/mechanism/README.md). *[EMPIRICAL, negative]*
+
+![H2 structured-recall comparison](results/figures/h2_structured_recall.png)
 
 ## Quickstart
 ```bash

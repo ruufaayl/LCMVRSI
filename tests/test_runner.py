@@ -83,6 +83,13 @@ def test_run_experiment_linear_attention_reports_fixed_state():
     assert result["model"]["state_size_bytes"] > 0
 
 
+def test_run_experiment_records_realized_writes_for_gated_model():
+    result = run_experiment(_tiny_config(model_name="sgsm", steps=2), eval_n=16)
+    mem = result["memory"]
+    assert 0.0 <= mem["write_fraction"] <= 1.0  # surprise gate exposes its realized write rate
+    assert mem["realized_writes_per_seq"] >= 0.0
+
+
 def test_transformer_learns_mqar_loss_decreases():
     result = run_experiment(_tiny_config(steps=150), eval_n=64)
     losses = result["train"]["losses"]

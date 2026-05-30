@@ -115,6 +115,15 @@ def run_experiment(cfg: ExperimentConfig, eval_n: int = 256) -> dict[str, Any]:
 
     eval_metrics = benchmark.evaluate(model, eval_n, seq_len, seed=cfg.seed + _EVAL_SEED_OFFSET)
 
+    # Models with a surprise/write gate (e.g. SGSM) expose `last_gate` from the eval forward;
+    # record the realized write rate so experiments can report input-dependent state growth.
+    realized: dict[str, Any] = {}
+    last_gate = getattr(model, "last_gate", None)
+    if last_gate is not None:
+        writes = (last_gate > 0.5).float()
+        realized["realized_writes_per_seq"] = float(writes.sum(dim=1).mean().item())
+        realized["write_fraction"] = float(writes.mean().item())
+
     n_tokens = cfg.train.steps * cfg.train.batch_size * seq_len
     param_count = count_parameters(model, trainable_only=False)
     param_bytes = sum(p.numel() * p.element_size() for p in model.parameters())
@@ -146,6 +155,7 @@ def run_experiment(cfg: ExperimentConfig, eval_n: int = 256) -> dict[str, Any]:
             "param_count": int(param_count),
             "param_bytes": int(param_bytes),
             "peak_cuda_bytes": peak_memory_bytes(device),
+            **realized,
         },
         "env": {**environment(), "device": str(device)},
     }

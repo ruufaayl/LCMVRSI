@@ -1,0 +1,71 @@
+{
+  "setup": {
+    "benchmark": "mqar",
+    "benchmark_params": {
+      "vocab_size": 64,
+      "seq_len": 24,
+      "num_pairs": 8
+    },
+    "model_names": [
+      "transformer",
+      "hyena",
+      "linear_attention",
+      "ssm",
+      "rwkv"
+    ],
+    "d_model": 64,
+    "n_layers": 2,
+    "n_heads": 4,
+    "steps": 2500,
+    "batch_size": 32,
+    "lr": 0.002,
+    "weight_decay": 0.01,
+    "warmup_frac": 0.1,
+    "max_grad_norm": 1.0,
+    "seed": 0,
+    "device": "cpu",
+    "eval_n": 256
+  },
+  "points": [
+    {
+      "model": "transformer",
+      "accuracy": 1.0,
+      "state_size_bytes": 0,
+      "param_count": 109888,
+      "tokens_per_sec": 34534.57046213251,
+      "final_loss": 0.00038589321775361896
+    },
+    {
+      "model": "hyena",
+      "accuracy": 0.19873046875,
+      "state_size_bytes": 0,
+      "param_count": 104640,
+      "tokens_per_sec": 31098.923514977516,
+      "final_loss": 1.9857656955718994
+    },
+    {
+      "model": "linear_attention",
+      "accuracy": 0.2001953125,
+      "state_size_bytes": 8704,
+      "param_count": 109888,
+      "tokens_per_sec": 20304.956203132228,
+      "final_loss": 1.9571326971054077
+    },
+    {
+      "model": "ssm",
+      "accuracy": 0.02294921875,
+      "state_size_bytes": 8192,
+      "param_count": 99520,
+      "tokens_per_sec": 13494.223128349986,
+      "final_loss": 3.4654150009155273
+    },
+    {
+      "model": "rwkv",
+      "accuracy": 0.181640625,
+      "state_size_bytes": 1536,
+      "param_count": 110016,
+      "tokens_per_sec": 9173.24167124324,
+      "final_loss": 1.9426164627075195
+    }
+  ]
+}

@@ -68,3 +68,21 @@ st.dataframe(df, use_container_width=True)
 runs = load_runs(RESULTS / "runs")
 if runs:
     st.caption(f"{len(runs)} raw per-run JSON file(s) found under results/runs/.")
+
+st.header("Recall–memory frontier (across models)")
+frontier_files = sorted(RESULTS.glob("frontier_*.json"))
+if not frontier_files:
+    st.info(
+        "No frontier results yet. Generate with:\n\n"
+        "```\nuv run --extra viz python experiments/frontier.py --benchmark mqar\n```"
+    )
+for fp in frontier_files:
+    fsummary = load_summary(fp)
+    if fsummary is None:
+        continue
+    task = fsummary.get("setup", {}).get("benchmark", fp.stem)
+    st.subheader(f"Task: {task}")
+    fig = RESULTS / "figures" / f"frontier_{task}.png"
+    if fig.exists():
+        st.image(str(fig), caption=f"results/figures/frontier_{task}.png")
+    st.dataframe(pd.DataFrame(fsummary.get("points", [])), use_container_width=True)

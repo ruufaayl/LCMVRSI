@@ -41,9 +41,11 @@ def complexity_table(
                 "model": name,
                 "time": c.get("time", "?"),
                 "memory": c.get("memory", "?"),
-                # transformers report a growing KV cache; recurrent models a fixed state
+                # recurrent models keep a fixed state; attention/long-conv keep O(T) history
                 "inference": c.get("inference_cache") or c.get("inference_state") or "?",
-                "state_kind": "growing KV cache" if state_bytes == 0 else "fixed recurrent state",
+                "state_kind": "grows with T (no fixed state)"
+                if state_bytes == 0
+                else "fixed recurrent state",
                 "state_size_bytes": state_bytes,
                 "param_count": int(count_parameters(model, trainable_only=False)),
             }

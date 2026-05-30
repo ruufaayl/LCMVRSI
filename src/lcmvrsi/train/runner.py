@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 import math
 import time
@@ -57,11 +58,18 @@ def build_model(cfg: ModelConfig, vocab_size: int, seq_len: int | None = None) -
     so the runner injects them into model construction. Explicit ``model.params`` win, so a
     config can still override ``max_seq_len`` or ``vocab_size`` deliberately.
     """
+    cls = get_model(cfg.name)
     params: dict[str, Any] = {"vocab_size": vocab_size}
     if seq_len is not None:
         params["max_seq_len"] = seq_len
     params.update(cfg.params)
-    return get_model(cfg.name)(**params)
+    # Configs carry a common superset of knobs (e.g. n_heads); drop those a given model's
+    # __init__ does not accept so heterogeneous models share one declarative config schema.
+    sig = inspect.signature(cls.__init__)
+    if not any(p.kind == p.VAR_KEYWORD for p in sig.parameters.values()):
+        allowed = set(sig.parameters) - {"self"}
+        params = {k: v for k, v in params.items() if k in allowed}
+    return cls(**params)
 
 
 def run_experiment(cfg: ExperimentConfig, eval_n: int = 256) -> dict[str, Any]:

@@ -51,6 +51,17 @@ def test_build_model_injects_vocab_size_and_max_seq_len():
     assert logits.shape == (2, 40, 32)
 
 
+def test_build_model_drops_params_a_model_does_not_accept():
+    # A shared config carries n_heads; SSM has no such argument and must not choke on it.
+    model = build_model(
+        ModelConfig(name="ssm", params={"d_model": 16, "n_layers": 1, "n_heads": 2}),
+        vocab_size=32,
+        seq_len=24,
+    )
+    logits = model(torch.zeros(2, 20, dtype=torch.long))
+    assert logits.shape == (2, 20, 32)
+
+
 def test_run_experiment_returns_structured_result():
     result = run_experiment(_tiny_config(steps=3), eval_n=16)
     for key in ("config", "model", "benchmark", "train", "eval", "memory", "env"):

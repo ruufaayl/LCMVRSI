@@ -8,11 +8,25 @@ scaffold for studying the **recall–memory tradeoff** in subquadratic sequence 
 > or results. References enter `paper/refs.bib` only after verification.
 
 ## What this is
-A runnable, tested comparison of sequence-model architectures (transformer, linear
-attention, SSM/Mamba, RWKV, …) on synthetic associative-recall tasks (MQAR), plus an
-honest attempt at a novel result: a lower bound linking recall capacity to recurrent
-state size, and an entropy-gated sparse-memory mechanism. See
+A runnable, tested comparison of sequence-model architectures on synthetic recall tasks,
+plus an honest attempt at a novel result: a lower bound linking recall capacity to recurrent
+state size, and (later) an entropy-gated sparse-memory mechanism. See
 [`docs/superpowers/specs/2026-05-29-lcmvrsi-design.md`](docs/superpowers/specs/2026-05-29-lcmvrsi-design.md).
+
+**Models** (all conform to one `SequenceModel` interface and self-report `state_size`/`complexity`):
+
+| Model | Time | Fixed recurrent state |
+|---|---|---|
+| `transformer` | `O(T² d)` | none (growing KV cache) |
+| `hyena` (gated FFT long conv) | `O(T log T · d)` | none (O(T) history) |
+| `linear_attention` | `O(T d²)` | `O(d²)` |
+| `ssm` (diagonal S4D-style) | `O(T d N)` | `O(d N)` |
+| `rwkv` (WKV recurrence) | `O(T d)` | `O(d)` |
+
+**Tasks** (`SequenceModel`-agnostic, recall is supervised only at query positions): `mqar`
+(multi-query associative recall), `copying`, `induction` (induction-head), `needle`
+(needle-in-a-haystack). The subquadratic/fixed-state models are simplified, honestly-named
+baselines — not the original authors' full kernels.
 
 ## Quickstart
 ```bash
@@ -35,6 +49,10 @@ uv run python experiments/run.py -c configs/base.yaml
 # and the figure results/figures/recall_vs_pairs.png (committed).
 uv run --extra viz python experiments/sweep_recall.py
 
+# Recall–memory / recall–throughput frontier across ALL models on one task at fixed difficulty.
+# Writes results/frontier_<task>.json + results/figures/frontier_<task>.png.
+uv run --extra viz python experiments/frontier.py --benchmark mqar
+
 # Complexity/memory table, generated from the live models (cross-checks docs/architecture-review):
 uv run python experiments/complexity_table.py -o results/complexity_table.md
 
@@ -49,12 +67,12 @@ every number is reproducible and traceable.
 - `src/lcmvrsi/` — package: `models/`, `benchmarks/`, `train/` (runner, sweep, LR schedule),
   `viz/`, `utils/`, `analysis.py` (complexity table)
 - `configs/` — YAML experiment configs (tiny-by-default; scale-up provided later)
-- `experiments/` — CLIs: `run.py` (single run), `sweep_recall.py` (recall sweep), `complexity_table.py`
+- `experiments/` — CLIs: `run.py` (single run), `sweep_recall.py`, `frontier.py`, `complexity_table.py`
 - `dashboard/` — Streamlit app over `results/`
 - `results/` — outputs: committed summary JSON + `figures/`; raw per-run JSONs in `runs/` (gitignored)
 - `paper/` — LaTeX sources; PDF built by CI
 - `docs/` — knowledge map, architecture review, problem formalization
 
 ## Status
-Milestone **M2 (vertical slice)** — runnable model/benchmark/runner/sweep/dashboard, all tested.
-Roadmap M0→M5 in the design spec.
+Milestone **M3 (widen)** — five architectures and four recall tasks on one interface, with the
+empirical recall–memory frontier. Roadmap M0→M5 in the design spec.

@@ -83,7 +83,25 @@ maintained by carrying running (numerator, denominator) sums with decay — a fi
 
 ---
 
-## 5. Summary table
+## 5. Hyena / long convolution [poli2023hyena]
+
+**Mechanism.** Interleave an *implicitly parametrized* long convolution with data-controlled
+(multiplicative) gating: `y = u ⊙ (h * v)`, where `h` is a global filter and `u, v` are linear
+projections of the input; the convolution is evaluated by FFT.
+
+- **Time.** FFT long convolution is `O(n log n · d)` — **subquadratic**. **[PROVEN/standard].**
+- **Memory / recurrent state.** *None fixed* — like attention it consumes the whole sequence,
+  so autoregressive inference needs `O(n)` history; there is no fixed-rank recurrent bottleneck.
+- **Recall.** The filter `h` is **content-independent** (it does not depend on the query), so
+  Hyena cannot do data-dependent associative addressing the way softmax attention does. Hence —
+  *despite having no fixed-state bound* — it still lags attention on MQAR-style recall unless
+  heavily tuned (cf. [arora2024zoology]). **No fixed state is necessary but not sufficient for
+  recall; the addressing mechanism matters.** (Our `hyena` baseline uses an *explicit* decaying
+  filter rather than the implicit FFN-of-positions parametrization, and is named accordingly.)
+
+---
+
+## 6. Summary table
 
 | Architecture | Train time | Infer/step | Memory | **Recurrent state** | Exact recall? |
 |---|---|---|---|---|---|
@@ -91,16 +109,20 @@ maintained by carrying running (numerator, denominator) sums with decay — a fi
 | Linear attention [katharopoulos2020transformers] | `O(n d_φ d_v)` | `O(d_φ d_v)` | `O(d_φ d_v)` | **`O(d_φ d_v)` fixed** | No (rank-limited) |
 | SSM / Mamba [gu2023mamba] | `O(n N d)` | `O(N d)` | `O(N d)` | **`O(N d)` fixed** | No (BASED Thm 3.1) |
 | RWKV [peng2023rwkv] | `O(n d)` | `O(d)` | `O(d)` | **`O(d)` fixed + decay** | No (+ recency bias) |
+| Hyena [poli2023hyena] | `O(n log n · d)` | `O(n d)` | `O(n d)` | **none (`O(n)` history)** | No (content-independent filter) |
 
 ---
 
-## 6. Synthesis (what this buys the project)
+## 7. Synthesis (what this buys the project)
 
-The three subquadratic models differ in *mechanism* but share one structural fact: a **fixed-
-size recurrent state** that does not grow with `n`. That single property is what
-[arora2024based] Thm 3.1 turns into the worst-case `Ω(n)` recall barrier, and what
-[jelassi2024copying] / [wen2025rnns] echo for copying / retrieval. Transformers escape only by
-keeping an `O(n)` (growing) KV cache and paying `O(n²)` compute.
+The three **fixed-state** subquadratic models (linear attention, SSM/Mamba, RWKV) differ in
+*mechanism* but share one structural fact: a **fixed-size recurrent state** that does not grow
+with `n`. That single property is what [arora2024based] Thm 3.1 turns into the worst-case `Ω(n)`
+recall barrier, and what [jelassi2024copying] / [wen2025rnns] echo for copying / retrieval.
+Transformers escape only by keeping an `O(n)` (growing) KV cache and paying `O(n²)` compute.
+**Hyena is the instructive exception:** it keeps *no* fixed state yet still under-recalls on
+MQAR, because its filter is content-independent — so the `Ω(n)` bound targets *fixed-state*
+models, while *content-based addressing* is an orthogonal lever a recall mechanism also needs.
 
 So the design space for *beating* the worst case is **not** "make the fixed state cleverer at
 fixed size" (the bound forbids it) — it is "**let the state grow with realized entropy `H`, not

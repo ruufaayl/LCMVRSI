@@ -1,0 +1,44 @@
+\section{Experimental Setup}
+\label{sec:experiments}
+
+All experiments are deliberately small (CPU / a 4\,GB laptop GPU); the synthetic tasks isolate the
+recall--memory mechanism rather than chase scale. Everything is reproducible from the repository:
+a global seed is set, the software environment (library versions, git commit) is logged in every
+result file, and each figure has a one-command regenerator.
+
+\paragraph{Harness.} Models implement one \texttt{SequenceModel} interface
+($\text{ids}\to\text{logits}$) and self-report \texttt{state\_size} (bytes of fixed recurrent
+state, $0$ if none) and \texttt{complexity}. Benchmarks implement \texttt{generate} and
+\texttt{evaluate}; recall is supervised only at query positions (loss ignores the rest). A single
+runner builds model and benchmark from a declarative config, trains, evaluates held-out recall,
+and writes a self-describing JSON (config, the model's complexity/state, training curve,
+throughput, environment, and---for gated models---the realized write rate).
+
+\paragraph{Models.} Six architectures at matched width/depth: a softmax-attention
+\emph{transformer} (no fixed state; $O(n^2)$); \emph{linear attention}~\citep{katharopoulos2020transformers}
+(fixed $O(d^2)$ state); a diagonal \emph{SSM} (S4D-style~\citep{gu2022s4}, fixed $O(dN)$);
+\emph{RWKV}~\citep{peng2023rwkv} (fixed $O(d)$); \emph{Hyena}~\citep{poli2023hyena} (gated FFT long
+convolution, no fixed state); and \textbf{SGSM}, the surprise-gated sparse-memory model of
+Section~\ref{sec:problem} (H2), whose store is input-dependent. The subquadratic/fixed-state models
+are small, honestly-named baselines, not the original authors' full kernels.
+
+\paragraph{Tasks.} All are associative-recall probes with answers resampled per sequence (so recall
+cannot be memorized in weights): \emph{MQAR}~\citep{arora2024zoology} (multi-query recall over $D$
+key$\rightarrow$value pairs); \emph{copying}~\citep{jelassi2024copying}; \emph{induction} (the
+induction-head rule); \emph{needle-in-a-haystack} (one binding hidden at random depth); and
+\emph{structured recall}, a predictable cyclic-filler stream with $D$ scattered novel bindings
+whose realized novelty is decoupled from length---the regime in which
+Corollary~\ref{cor:lowentropy} permits, and SGSM is designed to exploit, sub-$n$ state.
+
+\paragraph{Training.} AdamW with a linear-warmup/cosine-decay schedule and gradient clipping;
+tiny-by-default sizes. Constant-learning-rate training left the transformer baseline undertrained
+on harder instances, so the schedule and clipping are used throughout to obtain a converged
+baseline before comparing against it---without it the recall--state gap would be confounded by
+optimization, the very caveat raised by \citet{okpekpe2025revisiting}.
+
+\paragraph{Metrics and studies.} We report held-out recall accuracy against (i) task difficulty
+($D$), (ii) each model's fixed recurrent-state bytes and throughput (the empirical recall--memory
+and recall--throughput frontiers), and (iii) for SGSM, its \emph{realized} store size (mean writes)
+versus its worst case. The H2 study additionally ablates the surprise gate (forced fully open) to
+isolate its effect. Results---reported with their honesty tags and including negative
+outcomes---follow.

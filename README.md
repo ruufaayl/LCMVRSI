@@ -9,8 +9,9 @@ scaffold for studying the **recall–memory tradeoff** in subquadratic sequence 
 
 ## What this is
 A runnable, tested comparison of sequence-model architectures on synthetic recall tasks,
-plus an honest attempt at a novel result: a lower bound linking recall capacity to recurrent
-state size, and (later) an entropy-gated sparse-memory mechanism. See
+plus an honest attempt at a novel result: a **proven** lower bound (an *entropy floor*) linking
+recall capacity to recurrent state size, and a **surprise-gated sparse-memory** mechanism whose
+first experiment is an honest **negative** result (see `docs/theory`, `docs/mechanism`). See
 [`docs/superpowers/specs/2026-05-29-lcmvrsi-design.md`](docs/superpowers/specs/2026-05-29-lcmvrsi-design.md).
 
 **Models** (all conform to one `SequenceModel` interface and self-report `state_size`/`complexity`):
@@ -22,10 +23,12 @@ state size, and (later) an entropy-gated sparse-memory mechanism. See
 | `linear_attention` | `O(T d²)` | `O(d²)` |
 | `ssm` (diagonal S4D-style) | `O(T d N)` | `O(d N)` |
 | `rwkv` (WKV recurrence) | `O(T d)` | `O(d)` |
+| `sgsm` (surprise-gated memory, **H2**) | `O(T² d)` train | grows with surprise (≤ `O(T)`) |
 
 **Tasks** (`SequenceModel`-agnostic, recall is supervised only at query positions): `mqar`
 (multi-query associative recall), `copying`, `induction` (induction-head), `needle`
-(needle-in-a-haystack). The subquadratic/fixed-state models are simplified, honestly-named
+(needle-in-a-haystack), and `structured_recall` (predictable cyclic filler + sparse novel
+bindings; the H2 testbed). The subquadratic/fixed-state models are simplified, honestly-named
 baselines — not the original authors' full kernels.
 
 ## Quickstart
@@ -53,6 +56,10 @@ uv run --extra viz python experiments/sweep_recall.py
 # Writes results/frontier_<task>.json + results/figures/frontier_<task>.png.
 uv run --extra viz python experiments/frontier.py --benchmark mqar
 
+# H2 achievability test: SGSM vs baselines + gate ablation on the structured-recall task.
+# Writes results/h2_structured_recall.json + results/figures/h2_structured_recall.png.
+uv run --extra viz python experiments/h2_compare.py
+
 # Complexity/memory table, generated from the live models (cross-checks docs/architecture-review):
 uv run python experiments/complexity_table.py -o results/complexity_table.md
 
@@ -67,12 +74,15 @@ every number is reproducible and traceable.
 - `src/lcmvrsi/` — package: `models/`, `benchmarks/`, `train/` (runner, sweep, LR schedule),
   `viz/`, `utils/`, `analysis.py` (complexity table)
 - `configs/` — YAML experiment configs (tiny-by-default; scale-up provided later)
-- `experiments/` — CLIs: `run.py` (single run), `sweep_recall.py`, `frontier.py`, `complexity_table.py`
+- `experiments/` — CLIs: `run.py`, `sweep_recall.py`, `frontier.py`, `h2_compare.py`, `complexity_table.py`
 - `dashboard/` — Streamlit app over `results/`
 - `results/` — outputs: committed summary JSON + `figures/`; raw per-run JSONs in `runs/` (gitignored)
 - `paper/` — LaTeX sources; PDF built by CI
 - `docs/` — knowledge map, architecture review, problem formalization
 
 ## Status
-Milestone **M3 (widen)** — five architectures and four recall tasks on one interface, with the
-empirical recall–memory frontier. Roadmap M0→M5 in the design spec.
+Milestone **M4 (novel contribution)** — H1 *entropy-floor* lower bound **[PROVEN]** (`docs/theory`,
+paper §Theoretical Analysis); H2 surprise-gated memory (`sgsm`) implemented and tested, with an
+honest **negative** first result (the gate did not sparsify under recall-only supervision —
+`docs/mechanism`). Paper has theory, experimental-setup, and results/limitations sections.
+Roadmap M0→M5 in the design spec.

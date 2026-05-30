@@ -1,0 +1,86 @@
+\section{Results}
+\label{sec:results}
+
+We report theory, a reproduction of the known recall--memory phenomenon, and a negative result
+for the proposed mechanism. All numbers are single-seed at small scale (see Limitations); figures
+and JSON logs are in the repository.
+
+\subsection{Theory (H1)}
+Proposition~\ref{prop:floor} is the headline theoretical result: a proven entropy floor
+$S \ge H(M) - D[H_b(\varepsilon)+\varepsilon\log_2(|U|-1)]$ on recurrent state, recovering the
+known $\Omega(n)$ bound when $H(M)=\Theta(n)$ and admitting $o(n)$ state only when $H(M)\ll n$.
+It is a reparameterization of existing bounds, not a new technique (Section~\ref{sec:theory}).
+
+\subsection{Empirical recall--memory frontier (reproduction)}
+On MQAR with matched width/depth/budget, only softmax attention---which keeps an $O(n)$ cache,
+not a fixed state---solves the task as difficulty grows; every fixed-state model degrades. At
+$D=8$ pairs (held-out recall):
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+Model & Fixed state (bytes) & Recall \\
+\hline
+transformer & $0$ (growing cache) & $1.00$ \\
+hyena & $0$ ($O(n)$ history) & $0.20$ \\
+linear attention & $16{,}896$ & $0.20$ \\
+ssm (non-selective) & $8{,}192$ & $0.02$ \\
+rwkv & $1{,}536$ & $0.18$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent Two findings beyond the known wall: a \emph{non-selective} SSM collapses to chance
+(content-independent dynamics cannot address by content---the gap Mamba's selectivity targets),
+and \emph{Hyena} fails despite having \emph{no} fixed state, because its convolutional filter is
+content-independent. So a fixed state is sufficient but not necessary for failure: \textbf{content-
+based addressing is an orthogonal requirement} the $\Omega(n)$ bound does not capture. \textbf{[EMPIRICAL]};
+this reproduces prior art~\citep{arora2024zoology,arora2024based} and is not claimed as novel.
+
+\subsection{Mechanism (H2) --- a negative result}
+We tested SGSM against baselines and a gate-open ablation on \emph{structured recall} (predictable
+cyclic filler, sparse novel bindings), the setting designed to let the surprise gate stay sparse.
+The mechanism was \textbf{not} supported:
+
+\begin{center}
+\begin{tabular}{lccc}
+\hline
+Model & Recall & Write fraction & Realized store (bytes) \\
+\hline
+transformer & $0.22$ & --- & --- \\
+linear attention & $0.22$ & --- & $8{,}704$ (fixed) \\
+sgsm & $0.22$ & $0.98$ & $48{,}334$ ($\approx$ worst case) \\
+sgsm (no gate) & $0.22$ & $1.00$ & $49{,}152$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent The gate did not sparsify (it wrote $\sim 98\%$ of tokens), so SGSM's state stayed near
+its worst case and it matched, rather than beat, the baselines. The diagnosed cause is a
+train-objective gap: recall is supervised only at query positions, so the backbone is never
+trained to predict the filler, leaving the surprise signal $-\log p(x_t)$ uninformative and the
+gate unable to learn selectivity. The result is further confounded because \emph{no} model solved
+this task at the tested scale ($\sim 0.22$, including the transformer at $6000$ steps), so an H2
+advantage could not be isolated even in principle. \textbf{[EMPIRICAL, negative]}. The single most
+likely fix---an auxiliary next-token loss so surprise becomes informative---is left to future work
+(Section~\ref{sec:limitations}); per our falsification plan a negative result is reported, not
+hidden.
+
+\section{Limitations}
+\label{sec:limitations}
+\begin{itemize}
+\item \textbf{Scale and seeds.} All results are single-seed on a 4\,GB-class budget; no error bars,
+no large-scale runs. Quantitative values are indicative, not definitive.
+\item \textbf{Baselines are simplified.} The SSM/RWKV/Hyena models are small, honestly-named
+reimplementations, not the authors' full kernels; absolute numbers should not be read as those
+methods' best achievable performance.
+\item \textbf{Mechanism unproven and, so far, unsupported.} Proposition~\ref{prop:floor} is a
+\emph{lower} bound; achievability of $S\approx\Theta(H(M))$ remains open, and our first SGSM
+experiment is a negative result with a diagnosed (not yet fixed) cause.
+\item \textbf{Task calibration.} The structured-recall task was too hard for the tested models,
+confounding the H2 comparison; a calibrated version (solvable by the transformer upper bound) is
+needed before the mechanism can be fairly judged.
+\item \textbf{Training cost of SGSM.} The differentiable store attends densely ($O(n^2)$) during
+training; the claimed $O(n\cdot m)$ benefit is an inference-time, hard-gating property and was not
+the regime measured here.
+\end{itemize}

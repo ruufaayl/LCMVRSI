@@ -61,4 +61,38 @@ Proposition 1 says no mechanism can beat.
 - **Structured vs uniform inputs:** vary the key/value entropy of the MQAR generator; SGSM's
   advantage should appear only as `H(M)` drops.
 
-*Implementation is M4.3 (TDD, registered as `sgsm`); experiments are M4.4.*
+## 6. Findings (M4.4) — a negative result [EMPIRICAL]
+
+First head-to-head on `structured_recall` (seq_len 96, 8 pairs, cycle 8; transformer /
+linear_attention / sgsm / sgsm-no-gate; matched budget, seed 0;
+`results/h2_structured_recall.json`):
+
+| model | recall acc | write fraction | realized store |
+|---|---|---|---|
+| transformer | 0.218 | — | — (no fixed state) |
+| linear_attention | 0.224 | — | 8704 B (fixed) |
+| sgsm | 0.221 | **0.98** | 48334 B (≈84% of worst case) |
+| sgsm (no gate) | 0.222 | 1.00 | 49152 B |
+
+**H2 is not supported by this experiment.** Two findings, the first robust and the second a
+confound:
+
+1. **The surprise gate did not sparsify (writes ~94/96 tokens).** Root cause: the training loss
+   supervises recall *only at query positions* (`ignore_index` elsewhere), so the backbone is
+   never trained to predict the cyclic filler; its surprise `s_t=-log p(x_t)` therefore stays
+   high everywhere and the gate `sigmoid(alpha(s_t-tau))` writes almost everything. The
+   mechanism's premise — "unsurprising ⇒ don't write" — requires the backbone to actually learn
+   what is predictable, which recall-only supervision does not provide. This holds independent of
+   task difficulty.
+2. **No model solved the task (~0.22, incl. the transformer even at 6000 steps).** At this tiny
+   scale `structured_recall` (long, scattered bindings, cyclic filler) is too hard for a 2-layer,
+   64-dim model, so the comparison cannot isolate an H2 advantage even in principle.
+
+**Diagnosed fixes (future work), in priority order.** (a) Add an **auxiliary next-token LM loss**
+on filler positions so surprise becomes informative and the gate can learn sparsity — the single
+most likely fix for finding (1). (b) **Calibrate the structured task** so the upper-bound
+transformer solves it (shorter context / fewer pairs / more capacity), making the comparison
+meaningful. (c) Multi-seed, larger scale. Per the falsification plan, this negative result is
+reported as a contribution, not hidden.
+
+*Implementation is M4.3 (registered `sgsm`); this experiment is M4.4; the paper writeup is M4.5.*

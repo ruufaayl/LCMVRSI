@@ -36,16 +36,23 @@ def complexity_table(
         model = build_model(cfg, vocab_size=vocab_size, seq_len=seq_len)
         c = model.complexity(seq_len)
         state_bytes = int(model.state_size)
+        inference = c.get("inference_cache") or c.get("inference_state") or "?"
+        # The state-bytes figure is a *worst case*; the kind clarifies how state actually scales:
+        # recurrent models hold a fixed state, attention/long-conv keep O(T) history, and a
+        # surprise-gated store grows with the input's realized novelty (between the two).
+        if "grows with surprise" in inference:
+            state_kind = "grows with input (surprise-gated)"
+        elif state_bytes == 0:
+            state_kind = "grows with T (no fixed state)"
+        else:
+            state_kind = "fixed recurrent state"
         rows.append(
             {
                 "model": name,
                 "time": c.get("time", "?"),
                 "memory": c.get("memory", "?"),
-                # recurrent models keep a fixed state; attention/long-conv keep O(T) history
-                "inference": c.get("inference_cache") or c.get("inference_state") or "?",
-                "state_kind": "grows with T (no fixed state)"
-                if state_bytes == 0
-                else "fixed recurrent state",
+                "inference": inference,
+                "state_kind": state_kind,
                 "state_size_bytes": state_bytes,
                 "param_count": int(count_parameters(model, trainable_only=False)),
             }
@@ -55,9 +62,7 @@ def complexity_table(
 
 def render_markdown_table(rows: list[dict[str, Any]]) -> str:
     """Render complexity rows as a GitHub-flavored Markdown table."""
-    header = (
-        "| Model | Time | Memory | Inference/step | State kind | Fixed state (bytes) | Params |"
-    )
+    header = "| Model | Time | Memory | Inference/step | State kind | State (bytes, max) | Params |"
     sep = "|---|---|---|---|---|---|---|"
     lines = [header, sep]
     for r in rows:

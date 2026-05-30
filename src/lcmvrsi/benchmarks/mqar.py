@@ -73,4 +73,8 @@ class MQAR(Benchmark):
         preds = logits.argmax(dim=-1).cpu()
         mask = y != IGNORE_INDEX
         accuracy = (preds[mask] == y[mask]).float().mean().item()
-        return {"recall_accuracy": float(accuracy), "num_queries": int(mask.sum().item())}
+        return {
+            "accuracy": float(accuracy),  # generic key shared across all benchmarks
+            "recall_accuracy": float(accuracy),
+            "num_queries": int(mask.sum().item()),
+        }
